@@ -1,12 +1,14 @@
 #include "PlayerComponent.h"
 
-#include <thread>
-#include <chrono>
-
 #include "../Core/InputHandler.h"
 #include "../Core/Entity.h"
 
 namespace Wasabi {
+
+	static Sprite UP(0, 1);
+	static Sprite DOWN(0, 0);
+	static Sprite RIGHT(1, 0);
+	static Sprite LEFT(1, 1);
 
 	PlayerComponent::PlayerComponent(Wasabi::Entity& entity)
 		: Component(entity)
@@ -22,11 +24,15 @@ namespace Wasabi {
 			spriteComponent = component;
 		}
 
+		lastTime = glfwGetTime();
+
 	}
 
 	void PlayerComponent::Update(float dt)
 	{
-		spriteComponent->SetSprite({ 1, 1 });
+		UpdateSprite();
+
+		float time = glfwGetTime();
 
 		if (isMoving)
 		{
@@ -42,45 +48,27 @@ namespace Wasabi {
 		}
 		else
 		{
+			currentTime = glfwGetTime();
+			if ((currentTime - lastTime) < movementDelayAfterRotating)
+			{
+				return;
+			}
+
 			if (InputHandler::IsKeyPressed(GLFW_KEY_W))
 			{
-				if (direction != Utils::DIR_UP)
-				{
-					direction = Utils::DIR_UP;
-					return;
-				}
-				movementFinishPosition = Utils::Move(GetOwner().transform.Position, direction, 16);
-				isMoving = true;
+				HandleInput(Utils::DIR_UP);
 			}
-			if (InputHandler::IsKeyPressed(GLFW_KEY_S))
+			else if (InputHandler::IsKeyPressed(GLFW_KEY_S))
 			{
-				if (direction != Utils::DIR_DOWN)
-				{
-					direction = Utils::DIR_DOWN;
-					return;
-				}
-				movementFinishPosition = Utils::Move(GetOwner().transform.Position, direction, 16);
-				isMoving = true;
+				HandleInput(Utils::DIR_DOWN);
 			}
-			if (InputHandler::IsKeyPressed(GLFW_KEY_A))
+			else if (InputHandler::IsKeyPressed(GLFW_KEY_A))
 			{
-				if (direction != Utils::DIR_LEFT)
-				{
-					direction = Utils::DIR_LEFT;
-					return;
-				}
-				movementFinishPosition = Utils::Move(GetOwner().transform.Position, direction, 16);
-				isMoving = true;
+				HandleInput(Utils::DIR_LEFT);
 			}
-			if (InputHandler::IsKeyPressed(GLFW_KEY_D))
+			else if (InputHandler::IsKeyPressed(GLFW_KEY_D))
 			{
-				if (direction != Utils::DIR_RIGHT)
-				{
-					direction = Utils::DIR_RIGHT;
-					return;
-				}
-				movementFinishPosition = Utils::Move(GetOwner().transform.Position, direction, 16);
-				isMoving = true;
+				HandleInput(Utils::DIR_RIGHT);
 			}
 		}
 	}
@@ -90,8 +78,40 @@ namespace Wasabi {
 
 	}
 
+	void PlayerComponent::HandleInput(Utils::Direction dir)
+	{
+		if (direction != dir)
+		{
+			lastTime = currentTime;
+			direction = dir;
+			return;
+		}
+
+		movementFinishPosition = Utils::Move(GetOwner().transform.Position, dir, 16);
+		isMoving = true;
+	}
+
+	void PlayerComponent::UpdateSprite()
+	{
+		if (prevDirection == direction)
+		{
+			return;
+		}
+
+		if (direction == Utils::DIR_UP)
+			SetSprite(UP);
+		if (direction == Utils::DIR_DOWN)
+			SetSprite(DOWN);
+		if (direction == Utils::DIR_LEFT)
+			SetSprite(LEFT);
+		if (direction == Utils::DIR_RIGHT)
+			SetSprite(RIGHT);
+
+		prevDirection = direction;
+	}
+
 	void PlayerComponent::SetSprite(Sprite sprite)
 	{
-
+		spriteComponent->SetSprite(sprite);
 	}
 }
