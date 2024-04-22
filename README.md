@@ -2,7 +2,9 @@
 A work in progress project to emulate the feel of the Gameboy Advance Pokemon Games.
 Just for practice.
 
-<img src="resources/screenshot1.png" width=50%>
+<img id="screenshot1" src="resources/screenshot1.png" width=50%>
+<br>
+<label for="screenshot1">WIP Screenshot, testing a movement component and background component</label>
 
 ### Notes
 Made using OpenGL and GLAD. Rendering pixel-by-pixel to a quad the size of the window.
